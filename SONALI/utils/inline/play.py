@@ -40,25 +40,25 @@ def stream_markup_timer(_, videoid, chat_id, played, dur):
     percentage = (played_sec / duration_sec) * 100
     umm = math.floor(percentage)
     if 0 < umm <= 10:
-        bar = "🅢—————————"
+        bar = "🅝—————————"
     elif 10 < umm < 20:
-        bar = "—🅞————————"
+        bar = "—🅐————————"
     elif 20 <= umm < 30:
         bar = "——🅝———————"
     elif 30 <= umm < 40:
-        bar = "———🅐——————"
+        bar = "———🅓——————"
     elif 40 <= umm < 50:
         bar = "————♡—————"
     elif 50 <= umm < 60:
-        bar = "—————🅡————"
+        bar = "—————🅨————"
     elif 60 <= umm < 70:
         bar = "——————🅐———"
     elif 70 <= umm < 80:
-        bar = "———————🅙——"
+        bar = "———————🅓——"
     elif 80 <= umm < 95:
         bar = "————————🅐—"
     else:
-        bar = "——————————♡"
+        bar = "——————————🅥"
 
     buttons = [
         [
@@ -76,10 +76,10 @@ def stream_markup_timer(_, videoid, chat_id, played, dur):
         ],
       [
             InlineKeyboardButton(
-                text=" 𝗝ᴏɪɴ 🤌 ", url="https://t.me/NOBITA_ALL_BOT",
+                text=" 🎄 ᴊᴏɪɴ 🎄 ", url="https://t.me/NoxxNetwork",
             ),
             InlineKeyboardButton(
-                text="🌸 𝗦ᴜᴘᴘᴏʀᴛ 🌸", url="https://t.me/NOBITA_SUPPORT",
+                text="🌸 sᴜᴘᴘᴏʀᴛ 🌸", url="https://t.me/nycreation_chatzone",
             )
         ],
          [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
@@ -99,10 +99,10 @@ def stream_markup(_, videoid, chat_id):
          ],
         [
             InlineKeyboardButton(
-                text="𝗝ᴏɪɴ 🤌", url="https://t.me/NOBITA_ALL_BOT",
+                text="🫒 ᴊᴏɪɴ 🫒", url="https://t.me/noxxnetwork",
             ),
             InlineKeyboardButton(
-                text="🌸 𝗦ᴜᴘᴘᴏʀᴛ 🌸", url="https://t.me/NOBITA_SUPPORT",
+                text="🌸 sᴜᴘᴘᴏʀᴛ 🌸", url="https://t.me/nycreation_chatzone",
             )
         ],
         [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
