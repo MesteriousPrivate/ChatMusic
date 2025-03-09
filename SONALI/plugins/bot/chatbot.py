@@ -35,24 +35,48 @@ chatai = chatdb.Word.WordDb
 storeai = VIPBOY.Anonymous.Word.NewWordDb  
 
 sticker_db = db.stickers.sticker
-chatbot_settings = db.chatbot_settings  # ✅ Ye naye feature ke liye add kiya hai
+chatbot_settings = db.chatbot_settings  
 
 reply = []
 sticker = []
 LOAD = "FALSE"
 
+async def load_caches():
+    global reply, sticker, LOAD
+    if LOAD == "TRUE":
+        return
+    LOAD = "TRUE"
+    reply.clear()
+    sticker.clear()
+    
+    print("All cache cleaned ✅")
+    await asyncio.sleep(1)
+    try:
+        print("Loading All Caches...")
+        reply = await chatai.find().to_list(length=10000)
+        print("Replies Loaded ✅")
+        await asyncio.sleep(1)
+        sticker = await sticker_db.find().to_list(length=None)
+        if not sticker:
+            sticker_id = "CAACAgUAAxkBAAENzH5nsI3qB-eJNDAUZQL9v3SQl_m-DAACigYAAuT1GFUScU-uCJCWAjYE"
+            await sticker_db.insert_one({"sticker_id": sticker_id})
+        print("Sticker Loaded ✅")
+        print("All caches loaded 👍 ✅")
+        LOAD = "FALSE"
+    except Exception as e:
+        print(f"Error loading caches: {e}")
+        LOAD = "FALSE"
+    return
+
 async def is_chat_enabled(chat_id: int) -> bool:
-    """Check karega ki chatbot uss group me enabled hai ya nahi."""
     chat = await chatbot_settings.find_one({"chat_id": chat_id})
-    return chat and chat.get("enabled", False)  # Default OFF hai
+    return chat and chat.get("enabled", False)  
 
 async def set_chat_status(chat_id: int, status: bool):
-    """Enable ya disable chatbot in a group"""
     await chatbot_settings.update_one({"chat_id": chat_id}, {"$set": {"enabled": status}}, upsert=True)
 
 @app.on_message(filters.command("chat") & filters.group)
 async def toggle_chat(client: Client, message: Message):
-    """Group ke admins /chat on ya /chat off kar sakenge."""
     user = message.from_user
     chat_id = message.chat.id
 
@@ -88,7 +112,7 @@ async def chatbot(client: Client, message: Message):
         return
         
     chat_id = message.chat.id
-    if not await is_chat_enabled(chat_id):  # ✅ Yahan check add kiya hai
+    if not await is_chat_enabled(chat_id):  
         return
 
     try:
@@ -96,7 +120,6 @@ async def chatbot(client: Client, message: Message):
             return
           
         if (message.reply_to_message and message.reply_to_message.from_user.id == client.me.id) or (not message.reply_to_message):
-            
             if message.text and message.from_user:
                 message_text = message.text.lower()
                 
