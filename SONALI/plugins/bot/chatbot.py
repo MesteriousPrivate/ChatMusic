@@ -36,6 +36,8 @@ storeai = VIPBOY.Anonymous.Word.NewWordDb
 
 sticker_db = db.stickers.sticker
 
+chatbot_settings = db.chatbot_settings  # ✅ ON/OFF System ke liye database
+
 reply = []
 sticker = []
 LOAD = "FALSE"
@@ -67,7 +69,44 @@ async def load_caches():
         print(f"Error loading caches: {e}")
         LOAD = "FALSE"
     return
-  
+
+# ✅ Chatbot ON/OFF Status Check Function
+async def is_chat_enabled(chat_id: int) -> bool:
+    chat = await chatbot_settings.find_one({"chat_id": chat_id})
+    return chat and chat.get("enabled", False)  # ✅ Default: OFF
+
+# ✅ Chatbot ON/OFF Set Karne Ka Function
+async def set_chat_status(chat_id: int, status: bool):
+    await chatbot_settings.update_one({"chat_id": chat_id}, {"$set": {"enabled": status}}, upsert=True)
+
+@app.on_message(filters.command("chat") & filters.group)
+async def toggle_chat(client: Client, message: Message):
+    user = message.from_user
+    chat_id = message.chat.id
+
+    # ✅ Sirf Admins/Owner Allowed
+    chat_member = await client.get_chat_member(chat_id, user.id)
+    if chat_member.status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
+        return await message.reply_text("❌ **Sirf Admin/Owner is command ka use kar sakte hain!**")
+
+    # ✅ Agar koi sirf `/chat` likhe to status dikhaye
+    if len(message.command) == 1:
+        enabled = await is_chat_enabled(chat_id)
+        return await message.reply_text(f"🤖 **Chatbot Status:** {'🟢 ON' if enabled else '🔴 OFF'}")
+
+    # ✅ ON/OFF System
+    action = message.command[1].lower()
+    if action == "on":
+        await set_chat_status(chat_id, True)
+        return await message.reply_text("✅ **Chatbot Enabled!** Ab ye group me messages ka reply karega.")
+
+    elif action == "off":
+        await set_chat_status(chat_id, False)
+        return await message.reply_text("🚫 **Chatbot Disabled!** Ab ye group me reply nahi karega.")
+
+    else:
+        return await message.reply_text("❌ **Galat command! Use:**\n`/chat on` - Enable chatbot\n`/chat off` - Disable chatbot")
+        
 async def get_reply(message_text: str):
     global reply
     matched_replies = [reply_data for reply_data in reply if reply_data["word"] == message_text]
