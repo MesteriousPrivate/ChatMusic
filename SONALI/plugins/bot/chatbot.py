@@ -35,7 +35,6 @@ chatai = chatdb.Word.WordDb
 storeai = VIPBOY.Anonymous.Word.NewWordDb  
 
 sticker_db = db.stickers.sticker
-chatbot_settings = db.chatbot_settings  
 
 reply = []
 sticker = []
@@ -53,6 +52,7 @@ async def load_caches():
     await asyncio.sleep(1)
     try:
         print("Loading All Caches...")
+        
         reply = await chatai.find().to_list(length=10000)
         print("Replies Loaded ✅")
         await asyncio.sleep(1)
@@ -67,38 +67,86 @@ async def load_caches():
         print(f"Error loading caches: {e}")
         LOAD = "FALSE"
     return
+  
+async def get_reply(message_text: str):
+    global reply
+    matched_replies = [reply_data for reply_data in reply if reply_data["word"] == message_text]
 
-async def is_chat_enabled(chat_id: int) -> bool:
-    chat = await chatbot_settings.find_one({"chat_id": chat_id})
-    return chat and chat.get("enabled", False)  
+    if matched_replies:
+         return random.choice(matched_replies)
+        
+    return random.choice(reply) if reply else None
 
-async def set_chat_status(chat_id: int, status: bool):
-    await chatbot_settings.update_one({"chat_id": chat_id}, {"$set": {"enabled": status}}, upsert=True)
+async def save_reply(original_message: Message, reply_message: Message):
+    global reply
+    try:
+        reply_data = {
+            "word": original_message.text,
+            "text": None,
+            "check": "none",
+        }
 
-@app.on_message(filters.command("chat") & filters.group)
-async def toggle_chat(client: Client, message: Message):
-    user = message.from_user
-    chat_id = message.chat.id
+        if reply_message.sticker:
+            reply_data["text"] = reply_message.sticker.file_id
+            reply_data["check"] = "sticker"
+        elif reply_message.photo:
+            reply_data["text"] = reply_message.photo.file_id
+            reply_data["check"] = "photo"
+        elif reply_message.video:
+            reply_data["text"] = reply_message.video.file_id
+            reply_data["check"] = "video"
+        elif reply_message.audio:
+            reply_data["text"] = reply_message.audio.file_id
+            reply_data["check"] = "audio"
+        elif reply_message.animation:
+            reply_data["text"] = reply_message.animation.file_id
+            reply_data["check"] = "gif"
+        elif reply_message.voice:
+            reply_data["text"] = reply_message.voice.file_id
+            reply_data["check"] = "voice"
+        elif reply_message.text:
+            reply_text = reply_message.text
+            reply_data["text"] = reply_text
+            reply_data["check"] = "none"
+            
 
-    chat_member = await client.get_chat_member(chat_id, user.id)
-    if chat_member.status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
-        return await message.reply_text("❌ **Sirf Admin/Owner is command ka use kar sakte hain!**")
+        is_chat = await chatai.find_one(reply_data)
+        if not is_chat:
+            await chatai.insert_one(reply_data)
+            reply.append(reply_data)
 
-    if len(message.command) == 1:
-        enabled = await is_chat_enabled(chat_id)
-        return await message.reply_text(f"🤖 **Chatbot Status:** {'🟢 ON' if enabled else '🔴 OFF'}")
+    except Exception as e:
+        print(f"Error in save_reply: {e}")
+          
 
-    action = message.command[1].lower()
-    if action == "on":
-        await set_chat_status(chat_id, True)
-        return await message.reply_text("✅ **Chatbot Enabled!** Ab ye group me messages ka reply karega.")
+async def reply_message(client, chat_id, bot_id, message_text, message):
+    try:
+        reply_data = await get_reply(message_text)
+        if reply_data:
+            response_text = reply_data["text"]
+            translated_text = response_text
+            
+            if reply_data["check"] == "sticker":
+                await message.reply_sticker(reply_data["text"])
+            elif reply_data["check"] == "photo":
+                await message.reply_photo(reply_data["text"])
+            elif reply_data["check"] == "video":
+                await message.reply_video(reply_data["text"])
+            elif reply_data["check"] == "audio":
+                await message.reply_audio(reply_data["text"])
+            elif reply_data["check"] == "gif":
+                await message.reply_animation(reply_data["text"])
+            elif reply_data["check"] == "voice":
+                await message.reply_voice(reply_data["text"])
+            else:
+                results = f"**[{translated_text}](https://t.me/Lucyxbot?start=start)**"
+                await message.reply_text(translated_text, disable_web_page_preview=True)
 
-    elif action == "off":
-        await set_chat_status(chat_id, False)
-        return await message.reply_text("🚫 **Chatbot Disabled!** Ab ye group me reply nahi karega.")
-
-    else:
-        return await message.reply_text("❌ **Galat command! Use:**\n`/chat on` - Enable chatbot\n`/chat off` - Disable chatbot")
+    except (ChatAdminRequired, UserIsBlocked, ChatWriteForbidden, RPCError) as e:
+        return
+    except Exception as e:
+        print(f"Error in reply_message:- {e}")
+        return
 
 @app.on_message(filters.incoming, group=1)
 async def chatbot(client: Client, message: Message):
@@ -111,15 +159,16 @@ async def chatbot(client: Client, message: Message):
     if not message.from_user or message.from_user.is_bot:
         return
         
+    user_id = message.from_user.id if message.from_user else message.chat.id
     chat_id = message.chat.id
-    if not await is_chat_enabled(chat_id):  
-        return
-
+    bot_id = client.me.id
+    
     try:
         if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", "@", ".", "?", "#"]):
             return
           
         if (message.reply_to_message and message.reply_to_message.from_user.id == client.me.id) or (not message.reply_to_message):
+            
             if message.text and message.from_user:
                 message_text = message.text.lower()
                 
@@ -151,4 +200,6 @@ async def chatbot(client: Client, message: Message):
     except (ChatAdminRequired, UserIsBlocked, ChatWriteForbidden, RPCError) as e:
         return
     except (Exception, asyncio.TimeoutError) as e:
+    #    print(f"Error in send reply:- {e}")
         return
+
