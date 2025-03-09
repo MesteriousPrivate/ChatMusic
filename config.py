@@ -15,7 +15,7 @@ BOT_TOKEN = getenv("BOT_TOKEN")
 # -------------------------------------------------------
 OWNER_USERNAME = getenv("OWNER_USERNAME","ll_NOBITA_BOT_DEVLOPER_ll")
 # --------------------------------------------------------
-BOT_USERNAME = getenv("BOT_USERNAME","Aarvi_Music_xBot")
+BOT_USERNAME = getenv("BOT_USERNAME","Aaru_Music_xBot")
 # --------------------------------------------------------
 BOT_NAME = getenv("BOT_NAME")
 # ---------------------------------------------------------
@@ -29,7 +29,7 @@ DURATION_LIMIT_MIN = int(getenv("DURATION_LIMIT", 17000))
 # Chat id of a group for logging bot's activities
 LOGGER_ID = int(getenv("LOGGER_ID", -1001511253627))
 
-# Get this value from @PURVI_HELP_BOT on Telegram by /id
+# Get this value from @HEROKU_CLUB on Telegram by /id
 OWNER_ID = int(getenv("OWNER_ID", 7708051264))
 
 
@@ -41,7 +41,7 @@ HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 
 UPSTREAM_REPO = getenv(
     "UPSTREAM_REPO",
-    "https://github.com/NOBITA-PRIVETE-ACCOUNT/arvi-music",
+    "https://github.com/vishalpandeynkp/NAND-NEW",
 )
 UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "master")
 GIT_TOKEN = getenv(
