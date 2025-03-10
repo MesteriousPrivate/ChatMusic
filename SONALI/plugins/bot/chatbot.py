@@ -186,15 +186,43 @@ async def reply_message(client, chat_id, bot_id, message_text, message):
     except Exception as e:
         print(f"Error in reply_message:- {e}")
         return
+#  OWNER CAN ENABLE DISABLE COMMAND NEW 
+@app.on_message(filters.command("chatbot") & filters.user(1786683163))
+async def chatbot_toggle(client: Client, message: Message):
+    if len(message.command) == 1:
+        return await message.reply_text("❌ **Use:**\n`/chatbot enable` - Sab group me chatbot ON\n`/chatbot disable` - Sab group me chatbot OFF\n`/chatbot reset` - Sab group me chatbot OFF kar ke reset karega")
 
+    action = message.command[1].lower()
+    
+    if action == "enable":
+        await chatbot_settings.update_many({}, {"$set": {"enabled": True}})
+        return await message.reply_text("✅ **Chatbot Enabled!** Ab sabhi groups me chatbot kaam karega.")
+
+    elif action == "disable":
+        await chatbot_settings.update_many({}, {"$set": {"enabled": False}})
+        return await message.reply_text("🚫 **Chatbot Disabled!** Ab kisi bhi group me chatbot reply nahi karega, lekin DM me ON rahega.")
+
+    elif action == "reset":
+        await chatbot_settings.delete_many({})  # ✅ Sabhi settings hata do (reset)
+        return await message.reply_text("🔄 **Chatbot Reset!** Ab sabhi groups me default OFF ho gaya. Jise chalu karna ho, wo `/chat on` kare.")
+
+    else:
+        return await message.reply_text("❌ **Galat command! Use:**\n`/chatbot enable` - Sab group me chatbot ON\n`/chatbot disable` - Sab group me chatbot OFF\n`/chatbot reset` - Sab group me chatbot OFF kar ke reset karega")
+
+#old with upgrade
 @app.on_message(filters.incoming, group=1)
 async def chatbot(client: Client, message: Message):
     global sticker
     bot_id = client.me.id
+    
     if not sticker:
         await load_caches()
         return
     
+    # ✅ Agar chatbot globally OFF hai to return kar do (lekin DM me hamesha ON rahega)
+    if message.chat.type != enums.ChatType.PRIVATE and not await is_chat_enabled(message.chat.id):
+        return
+
     if not message.from_user or message.from_user.is_bot:
         return
         
