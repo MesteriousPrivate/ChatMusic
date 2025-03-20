@@ -29,7 +29,7 @@ async def start(_, msg):
           InlineKeyboardButton("ᴀᴅᴅ ᴍᴇᴇʜ ʙᴀʙʏ", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")
         ],
         [
-          InlineKeyboardButton("ʜᴇʟᴘ", url="https://t.me/NOBITA_SUPPORT"),
+          InlineKeyboardButton("ʜᴇʟᴘ", url="https://t.me/Nycreation_chatzone"),
           InlineKeyboardButton("ɴᴏxx", url="https://t.me/NoxxNetwork"),
           ],
                [
