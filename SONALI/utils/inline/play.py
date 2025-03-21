@@ -99,10 +99,10 @@ def stream_markup(_, videoid, chat_id):
          ],
         [
             InlineKeyboardButton(
-                text="🫒 ᴊᴏɪɴ 🫒", url="https://t.me/noxxnetwork",
+                text="🫒 ᴊᴏɪɴ 🫒", url="https://t.me/heaven_of_actresses",
             ),
             InlineKeyboardButton(
-                text="🌸 sᴜᴘᴘᴏʀᴛ 🌸", url="https://t.me/nycreation_chatzone",
+                text="🌸 sᴜᴘᴘᴏʀᴛ 🌸", url="https://t.me/+XwY-WRKaWhhlYzk1",
             )
         ],
         [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
